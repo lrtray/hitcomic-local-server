@@ -51,6 +51,7 @@ func (server *Server) createServer() {
 	server.server = myServer
 
 	ticketController := &TicketController{server: server}
+	staffController := &StaffController{server: server}
 	// Middleware
 	myServer.Use(func(c *gin.Context) {
 		c.Set("DB", server.db)
@@ -62,13 +63,16 @@ func (server *Server) createServer() {
 			"message": "pong",
 		})
 	})
-	myServer.POST("/ticket", SafeFilterMiddleware(), SafeIsInDBMiddleware(), ticketController.Post)
-	myServer.GET("/test", func(c *gin.Context) {
-		service := QueryService{}
-		c.JSON(200, gin.H{
-			"message": service.QueryTicket(server.db, "test"),
-		})
-	})
+	myServer.POST("/ticket",
+		SafeFilterMiddleware(),
+		SafeIsInDBMiddleware(),
+		SafeIsTicketMiddleware(),
+		SafeIsInvalidMiddleware(),
+		ticketController.Post,
+	)
+	myServer.POST("/staff", SafeFilterMiddleware(), SafeIsInDBMiddleware(), staffController.Post)
+
+	// Static model
 	myServer.Static("/assets", "./assets")
 }
 
