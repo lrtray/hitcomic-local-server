@@ -94,7 +94,7 @@ func SafeIsTicketMiddleware() gin.HandlerFunc {
 			CreateLog(c.MustGet("DB").(*gorm.DB), tickets.Key, 3, "fuckyou: SafeIsTicketMiddleware is not Ticket")
 			c.JSON(200, gin.H{
 				"result": "fuckyou",
-				"info":   "SafeIsTicketMiddleware is not Ticket",
+				"info":   "SafeIsTicketMiddleware: is not Ticket",
 			})
 			c.Abort()
 		}
@@ -115,6 +115,26 @@ func SafeIsInvalidMiddleware() gin.HandlerFunc {
 			c.Abort()
 		} else {
 			c.Next()
+		}
+	}
+}
+
+//SafeIsCapturedMiddleware ...
+func SafeIsCapturedMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		picture := CertPicture{Tickets: c.MustGet("ticketModel").(Tickets)}
+		db := c.MustGet("DB").(*gorm.DB)
+		query := db.Find(&picture)
+		if query.Error != nil{
+			c.JSON(200, gin.H{
+				"result": "false",
+				"info":   "SafeIsCapturedMiddleware: Picture not saved.",
+			})
+		} else {
+			c.JSON(200, gin.H{
+				"result": "under construction",
+				"info":   "SafeIsCapturedMiddleware: Under construction.",
+			})
 		}
 	}
 }
